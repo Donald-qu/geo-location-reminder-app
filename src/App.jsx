@@ -1,31 +1,27 @@
-App.jsx
 import { useState } from "react";
 import ReminderForm from "./components/ReminderForm";
 import MapView from "./components/MapView";
 import Dashboard from "./pages/Dashboard";
 import LocationTracker from "./components/LocationTracker";
-import { Toaster, toast } from "react-hot-toast"; // ✅ toast import
+import { Toaster, toast } from "react-hot-toast";
 
 function App() {
-  const defaultLocation = [5.5905, -0.1657]; // Default: Burma Camp
+  const defaultLocation = [5.5905, -0.1657];
   const [reminders, setReminders] = useState([]);
   const [view, setView] = useState("map");
   const [mapCenter, setMapCenter] = useState(defaultLocation);
   const [searchMarker, setSearchMarker] = useState(defaultLocation);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // --- LOGIN STATE ---
+  // Login State
   const [loggedIn, setLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  // --- LOGIN HANDLER ---
   const handleLogin = (e) => {
     e.preventDefault();
-    const defaultUser = "user";
-    const defaultPass = "Qwerty";
-
-    if (username.toLowerCase() === defaultUser.toLowerCase() && password === defaultPass) {
+    if (username.toLowerCase() === "user" && password === "Qwerty") {
       setLoggedIn(true);
       setError("");
     } else {
@@ -33,7 +29,6 @@ function App() {
     }
   };
 
-  // --- Function to send SMS via backend ---
   const sendSmsNotification = async (reminder) => {
     try {
       await fetch("http://localhost:5000/send-sms", {
@@ -44,37 +39,31 @@ function App() {
           body: `Reminder: ${reminder.title} at (${reminder.lat}, ${reminder.lng})`,
         }),
       });
-      console.log("SMS sent successfully!");
     } catch (err) {
       console.error("Error sending SMS:", err);
     }
   };
 
-  // --- ✅ Handle reminder triggered instantly ---
   const handleReminderTriggered = (id) => {
-    setReminders((prevReminders) => {
-      const updatedReminders = prevReminders.map((r) =>
+    setReminders((prev) => {
+      const updated = prev.map((r) =>
         r.id === id ? { ...r, triggered: true } : r
       );
-
-      const triggeredReminder = updatedReminders.find((r) => r.id === id);
-      if (triggeredReminder) {
-        toast.success(`🎯 Reminder triggered: ${triggeredReminder.title}`, {
+      const rem = updated.find((r) => r.id === id);
+      if (rem) {
+        toast.success(`🎯 Reminder triggered: ${rem.title}`, {
           duration: 4000,
-          position: "top-center", // ✅ centered popup
+          position: "top-center",
           style: {
             background: "#00bfff",
             color: "#fff",
-            fontWeight: "bold",
             borderRadius: "10px",
             padding: "12px 16px",
           },
         });
-
-        sendSmsNotification(triggeredReminder);
+        sendSmsNotification(rem);
       }
-
-      return updatedReminders;
+      return updated;
     });
   };
 
@@ -83,9 +72,8 @@ function App() {
   };
 
   const deleteReminder = (id) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this reminder?");
-    if (confirmDelete) {
-      setReminders(reminders.filter((rem) => rem.id !== id));
+    if (window.confirm("Are you sure you want to delete this reminder?")) {
+      setReminders(reminders.filter((r) => r.id !== id));
     }
   };
 
@@ -97,7 +85,6 @@ function App() {
 
   const handleReminderAdded = (reminder) => {
     addReminder(reminder);
-
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -116,148 +103,69 @@ function App() {
     }
   };
 
-  // --- LOGIN SCREEN ---
+  // LOGIN SCREEN
   if (!loggedIn) {
     return (
-      <div
-        style={{
-          height: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          flexDirection: "column",
-          background: "#f0f0f0",
-        }}
-      >
-        <h1 style={{ color: "#00aaff", marginBottom: "20px" }}>
-          Welcome to the Location Reminder App
-        </h1>
-        <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            style={{ padding: "12px" }}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ padding: "12px" }}
-          />
-          <button
-            type="submit"
-            style={{
-              padding: "12px",
-              background: "#00aaff",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            Login
-          </button>
-        </form>
-        {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
+      <div className="login-screen">
+        <div className="glass-card">
+          <h1>🔐 Location Reminder Login</h1>
+          <form onSubmit={handleLogin}>
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button type="submit">Login</button>
+          </form>
+          {error && <p className="error-text">{error}</p>}
+        </div>
       </div>
     );
   }
 
-  // --- MAIN APP UI ---
+  // MAIN APP
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          duration: 5000,
-          style: {
-            borderRadius: "10px",
-            background: "#00bfff",
-            color: "#fff",
-            fontWeight: "bold",
-            fontSize: "16px",
-          },
-        }}
-      />
+    <div className="app-container">
+      <Toaster />
 
-      <div
-        className="map-title-bar"
-        style={{
-          width: "100%",
-          padding: "10px 20px",
-          color: "white",
-          textAlign: "center",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "10px",
-          boxSizing: "border-box",
-          position: "sticky",
-          top: 0,
-          left: 0,
-          zIndex: 1000,
-        }}
-      >
-        <h1 style={{ fontSize: "1.5rem", margin: 0, textAlign: "center" }}>📍 Location Reminder App</h1>
-
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "10px",
-            justifyContent: "center",
-          }}
-        >
+      {/* Header */}
+      <div className="map-title-bar">
+        <button className="menu-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
+          ☰
+        </button>
+        <h1>📍 Location Reminder App</h1>
+        <div className="view-switch">
           <button
             onClick={() => setView("map")}
-            style={{
-              padding: "8px 15px",
-              borderRadius: "6px",
-              border: "none",
-              background: view === "map" ? "#00aaff" : "#444",
-              color: "white",
-              cursor: "pointer",
-            }}
+            className={view === "map" ? "active" : ""}
           >
             🗺️ Map View
           </button>
-
           <button
             onClick={() => setView("dashboard")}
-            style={{
-              padding: "8px 15px",
-              borderRadius: "6px",
-              border: "none",
-              background: view === "dashboard" ? "#00aaff" : "#444",
-              color: "white",
-              cursor: "pointer",
-            }}
+            className={view === "dashboard" ? "active" : ""}
           >
             📊 Dashboard
           </button>
         </div>
       </div>
 
-      <div style={{ display: "flex", flexGrow: 1, flexWrap: "wrap" }}>
-        <div
-          className="sidebar"
-          style={{
-            width: "300px",
-            minWidth: "250px",
-            background: "hsl(196, 94%, 67%)",
-            padding: "15px",
-            overflowY: "auto",
-            flexShrink: 0,
-          }}
-        >
+      <div className="content">
+        {/* Sidebar */}
+        <div className={`sidebar glass-panel ${sidebarOpen ? "open" : ""}`}>
           <h2>Reminders</h2>
           <ReminderForm addReminder={handleReminderAdded} onLocationFound={handleLocationFound} />
         </div>
 
-        <div className="map-area" style={{ flexGrow: 1, minWidth: "300px", height: "100%" }}>
+        {/* Main Map / Dashboard */}
+        <div className="map-area">
           {view === "map" ? (
             <MapView reminders={reminders} mapCenter={mapCenter} searchMarker={searchMarker} />
           ) : (
@@ -272,4 +180,3 @@ function App() {
 }
 
 export default App;
-

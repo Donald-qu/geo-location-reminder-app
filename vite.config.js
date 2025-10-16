@@ -9,7 +9,7 @@ export default defineConfig({
       registerType: "autoUpdate", // Automatically updates service worker
       includeAssets: ["vite.svg"], // Logo
       manifest: {
-        name: "Location Reminder App",
+        name: " Geo-Location Reminder App",
         short_name: "ReminderApp",
         description:
           "A smart location-based reminder app that alerts you when you enter your chosen area.",
