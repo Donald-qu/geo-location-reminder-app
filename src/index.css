@@ -5,15 +5,17 @@
   --text-dark: #0a3d62;
 }
 
+/* ===== BASE ===== */
 body, html, #root {
   margin: 0;
   height: 100%;
   font-family: "Poppins", sans-serif;
   background: radial-gradient(circle at top left, #0077b6, #00b4d8, #90e0ef);
   color: var(--text-dark);
+  overflow-x: hidden;
 }
 
-/* ===== LOGIN PAGE ===== */
+/* ===== LOGIN SCREEN ===== */
 .login-screen {
   height: 100vh;
   display: flex;
@@ -73,26 +75,39 @@ body, html, #root {
 
 /* ===== HEADER ===== */
 .map-title-bar {
+  width: 100%;
+  background: rgba(0, 153, 255, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.25);
+  padding: 1rem 1.5rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--glass-bg);
-  padding: 15px 20px;
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--glass-border);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
   color: white;
 }
 
 .menu-btn {
-  font-size: 1.5rem;
   background: transparent;
   color: white;
   border: none;
+  font-size: 1.8rem;
   cursor: pointer;
-  display: none;
+  transition: 0.3s;
+}
+
+.menu-btn:hover {
+  transform: scale(1.1);
+}
+
+.view-switch {
+  display: flex;
+  gap: 0.7rem;
 }
 
 .view-switch button {
@@ -109,51 +124,108 @@ body, html, #root {
   background: var(--blue);
 }
 
-.content {
-  display: flex;
-  height: calc(100vh - 70px);
-}
-
+/* ===== SIDEBAR ===== */
 .sidebar {
+  position: fixed;
+  top: 80px; /* starts below the header */
+  left: -320px;
   width: 300px;
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
+  height: calc(100% - 80px);
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(20px);
   border-right: 1px solid var(--glass-border);
-  transition: transform 0.4s ease-in-out;
-}
-
-.glass-panel {
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
   border-radius: 0 16px 16px 0;
+  box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+  padding: 1.5rem;
+  overflow-y: auto;
+  transition: left 0.4s ease, box-shadow 0.3s ease;
+  z-index: 1200;
 }
 
+.sidebar.open {
+  left: 0;
+  box-shadow: 8px 0 25px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar h2 {
+  text-align: center;
+  color: var(--text-dark);
+  margin-bottom: 1.2rem;
+}
+
+/* ===== REMINDER FORM ===== */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+input[type="text"], input[type="number"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.9);
+  font-size: 0.95rem;
+  color: var(--text-dark);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 6px rgba(0,191,255,0.4);
+  outline: none;
+}
+
+button {
+  background: linear-gradient(135deg, #00bfff, #0081cc);
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+
+button:hover {
+  transform: scale(1.03);
+  background: linear-gradient(135deg, #0077b6, #0096c7);
+}
+
+/* ===== MAP AREA ===== */
 .map-area {
-  flex-grow: 1;
+  margin-top: 80px;
+  width: 100%;
+  height: calc(100vh - 80px);
   position: relative;
-  background: rgba(255,255,255,0.6);
+  overflow: hidden;
+}
+
+.leaflet-control-container {
+  z-index: 1500 !important; /* keeps + / − visible */
 }
 
 /* ===== MOBILE VIEW ===== */
 @media (max-width: 768px) {
-  .menu-btn {
-    display: block;
+  .map-title-bar {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0.8rem 1rem;
   }
 
   .sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    transform: translateX(-100%);
-    z-index: 999;
+    width: 70%;
+    max-width: 280px;
+    left: -100%; /* 👈 ensure fully hidden on mobile */
+    top: 80px;
+    height: calc(100% - 80px);
   }
 
-  .sidebar.open {
-    transform: translateX(0);
-  }
-
-  .map-area {
-    width: 100%;
+  .view-switch button {
+    font-size: 0.9rem;
   }
 }
 
@@ -162,3 +234,117 @@ body, html, #root {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+/* ===================== */
+/* ✅ DASHBOARD SECTION  */
+/* ===================== */
+.dashboard {
+  width: 95%;
+  margin: 1rem auto;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow-x: auto;          /* ✅ allows scroll when width shrinks */
+  white-space: nowrap;
+}
+
+/* Table Styling */
+.reminder-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 900px;          /* ✅ moderate width (not too wide) */
+  text-align: left;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Header + Cell */
+.reminder-table th,
+.reminder-table td {
+  padding: 5px 5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  color: #0a3d62;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  vertical-align: middle;
+  background: rgba(255, 255, 255, 0.15);
+  text-overflow: ellipsis;
+}
+
+/* Header Style */
+.reminder-table th {
+  font-weight: 600;
+  color: #003554;
+  background: rgba(255, 255, 255, 0.35);
+  text-align: left;
+}
+
+/* Hover Effect */
+.reminder-table tr:hover td {
+  background: rgba(0, 191, 255, 0.12);
+  transition: 0.3s;
+}
+
+/* Keep the last cell (Delete button) inside */
+.reminder-table td:last-child {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Delete Button */
+.reminder-table td button {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #00bfff, #0096c7);
+  color: white;
+  font-size: 0.85rem;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+  width: 80%;
+  max-width: 100px;
+}
+
+.reminder-table td button:hover {
+  background: linear-gradient(135deg, #0077b6, #00b4d8);
+  transform: scale(1.05);
+}
+
+/* Balanced Column Widths */
+.reminder-table th:nth-child(1),
+.reminder-table td:nth-child(1) {
+  width: 25%;
+}
+
+.reminder-table th:nth-child(2),
+.reminder-table td:nth-child(2),
+.reminder-table th:nth-child(3),
+.reminder-table td:nth-child(3) {
+  width: 18%;
+}
+
+.reminder-table th:nth-child(4),
+.reminder-table td:nth-child(4) {
+  width: 20%;
+}
+
+.reminder-table th:nth-child(5),
+.reminder-table td:nth-child(5) {
+  width: 15%;
+}
+
+/* ✅ Smooth Scrollbar */
+.dashboard::-webkit-scrollbar {
+  height: 8px;
+}
+.dashboard::-webkit-scrollbar-thumb {
+  background: rgba(0, 191, 255, 0.5);
+  border-radius: 10px;
+}
+.dashboard::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 191, 255, 0.8);
+}
+
+
