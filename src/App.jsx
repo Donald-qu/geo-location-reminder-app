@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import ReminderForm from "./components/ReminderForm";
 import MapView from "./components/MapView";
 import Dashboard from "./pages/Dashboard";
@@ -13,11 +13,14 @@ function App() {
   const [searchMarker, setSearchMarker] = useState(defaultLocation);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Login State
+  // Login
   const [loggedIn, setLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  // ✅ Sound reference
+  const audioRef = useRef(new Audio("/sounds/mixkit-melodical-flute-music-notification-2310.wav"));
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -44,6 +47,7 @@ function App() {
     }
   };
 
+  // ✅ Play and stop sound with toast
   const handleReminderTriggered = (id) => {
     setReminders((prev) => {
       const updated = prev.map((r) =>
@@ -51,7 +55,11 @@ function App() {
       );
       const rem = updated.find((r) => r.id === id);
       if (rem) {
-        toast.success(`🎯 Reminder triggered: ${rem.title}`, {
+        const sound = audioRef.current;
+        sound.currentTime = 0;
+        sound.play();
+
+        const toastId = toast.success(`🎯 Reminder triggered: ${rem.title}`, {
           duration: 4000,
           position: "top-center",
           style: {
@@ -61,6 +69,13 @@ function App() {
             padding: "12px 16px",
           },
         });
+
+        // Stop sound after toast duration
+        setTimeout(() => {
+          sound.pause();
+          sound.currentTime = 0;
+        }, 4000);
+
         sendSmsNotification(rem);
       }
       return updated;
@@ -103,7 +118,6 @@ function App() {
     }
   };
 
-  // LOGIN SCREEN
   if (!loggedIn) {
     return (
       <div className="login-screen">
@@ -130,12 +144,9 @@ function App() {
     );
   }
 
-  // MAIN APP
   return (
     <div className="app-container">
       <Toaster />
-
-      {/* Header */}
       <div className="map-title-bar">
         <button className="menu-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
           ☰
@@ -158,13 +169,11 @@ function App() {
       </div>
 
       <div className="content">
-        {/* Sidebar */}
         <div className={`sidebar glass-panel ${sidebarOpen ? "open" : ""}`}>
           <h2>Reminders</h2>
           <ReminderForm addReminder={handleReminderAdded} onLocationFound={handleLocationFound} />
         </div>
 
-        {/* Main Map / Dashboard */}
         <div className="map-area">
           {view === "map" ? (
             <MapView reminders={reminders} mapCenter={mapCenter} searchMarker={searchMarker} />
